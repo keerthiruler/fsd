@@ -1,0 +1,118 @@
+1.	 Develop a simple Django app that displays an unordered list of fruits 
+         and ordered list of selected students for an event 
+
+
+django-admin startproject event_manager
+cd event_manager
+py manage.py startapp events
+•	events/models.py 
+
+from django.db import models
+class Fruit(models.Model):
+    name = models.CharField(max_length=100)
+
+    def __str__(self):
+        return self.name
+
+class Student(models.Model):
+    name = models.CharField(max_length=100)
+    event = models.CharField(max_length=100)  # Assuming the event name is a string
+    selected = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.name
+
+•	events/admin.py 
+from django.contrib import admin
+from .models import Fruit, Student
+
+admin.site.register(Fruit)
+admin.site.register(Student)
+
+py manage.py check
+py manage.py makemigrations
+py manage.py migrate
+py manage.py shell
+
+>>> from events.models import Fruit   
+>>> p1=Fruit(name='Orenge')              
+>>> p1.save()
+>>> f=Fruit.objects.all()
+>>> f
+<QuerySet [<Fruit: Orenge>]>
+>>>
+
+•	events/views.py
+from django.shortcuts import render
+from .models import Fruit, Student
+
+def fruit_list(request):
+    fruits = Fruit.objects.all()
+    return render(request, 'events/fruit_list.html', {'fruits': fruits})
+
+def student_list(request):
+    students = Student.objects.filter(selected=True)
+    return render(request, 'events/student_list.html', {'students': students})
+
+Create templates in the events/templates/events/ directory:
+•	fruit_list.html:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Fruit List</title>
+</head>
+<body>
+    <h1>Available Fruits:</h1>
+    <ul>
+        {% for fruit in fruits %}
+            <li>{{ fruit.name }}</li>
+        {% endfor %}
+    </ul>
+</body>
+</html>
+•	student_list.html:
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Selected Students</title>
+</head>
+<body>
+    <h1>Selected Students for the Event:</h1>
+    <ol>
+        {% for student in students %}
+            <li>{{ student.name }}</li>
+        {% endfor %}
+    </ol>
+</body>
+</html>
+•	events/urls.py 
+from django.urls import path
+from . import views
+
+urlpatterns = [
+    path('fruits/', views.fruit_list, name='fruit_list'),
+    path('students/', views.student_list, name='student_list'),
+]
+•	urls.py (event_manager/urls.py).
+from django.contrib import admin
+from django.urls import path, include
+
+urlpatterns = [
+    path('admin/', admin.site.urls),
+    path('events/', include('events.urls')),
+]
+
+py manage.py runserver
+http://127.0.0.1:8000/events/fruits/ 
+http://127.0.0.1:8000/events/students/ 
+
+
+
+
+
+
+
+
+
+
+
